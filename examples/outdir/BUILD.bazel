@@ -1,0 +1,36 @@
+load("@aspect_bazel_lib//lib:write_source_files.bzl", "write_source_files")
+load("//ts:defs.bzl", "ts_project")
+
+[
+    ts_project(
+        name = "compile_%s" % format,
+        srcs = ["a.ts"],
+        args = [
+            "--module",
+            format,
+            "--moduleResolution",
+            "node",
+        ],
+        # Write the output files to an extra nested directory
+        out_dir = format,
+        tsconfig = "tsconfig.json",
+    )
+    for format in [
+        "commonjs",
+        "esnext",
+    ]
+]
+
+write_source_files(
+    name = "test_cjs",
+    src = "a.golden.cjs",
+    # Refers to the output from ts_project above
+    generated = "commonjs/a.js",
+)
+
+write_source_files(
+    name = "test_esm",
+    src = "a.golden.js",
+    # Refers to the output from ts_project above
+    generated = "esnext/a.js",
+)

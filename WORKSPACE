@@ -24,6 +24,13 @@ nodejs_register_toolchains(
     node_version = "16.9.0",
 )
 
+load("@aspect_rules_js//js:npm_import.bzl", "translate_pnpm_lock")
+
+translate_pnpm_lock(
+    name = "npm",
+    pnpm_lock = "//examples:pnpm-lock.json",
+)
+
 # For running our own unit tests
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 

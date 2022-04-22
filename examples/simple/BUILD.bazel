@@ -1,7 +1,17 @@
-load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
+load("@aspect_bazel_lib//lib:write_source_files.bzl", "write_source_files")
+load("//ts:defs.bzl", "ts_project")
 
+# This uses defaults for all attributes.
+# It will find `index.ts` and produce `index.js`
 ts_project(
-    name = "ts",
-    srcs = ["foo.ts"],
-    declaration = True,
+    name = "compile",
+)
+
+write_source_files(
+    name = "test",
+    files = {
+        "index.golden.js":
+        # Refers to the output from ts_project above
+        "index.js",
+    },
 )

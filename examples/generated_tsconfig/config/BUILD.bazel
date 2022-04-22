@@ -1,0 +1,43 @@
+"Test that properties in the tsconfig dict are honored"
+
+load("@aspect_bazel_lib//lib:write_source_files.bzl", "write_source_files")
+load("//ts:defs.bzl", "ts_project")
+
+ts_project(
+    tsconfig = {
+        "compilerOptions": {
+            "declaration": True,
+            "declarationDir": "types",
+            "declarationMap": True,
+            "module": "esnext",
+            "moduleResolution": "node",
+            "outDir": "out",
+            "rootDir": "src",
+            "sourceMap": True,
+        },
+    },
+)
+
+write_source_files(
+    name = "test",
+    src = "expected.js_",
+    generated = ":out/a.js",
+)
+
+write_source_files(
+    name = "test_map",
+    src = "expected.js.map_",
+    generated = ":out/a.js.map",
+)
+
+write_source_files(
+    name = "test_dts",
+    src = "expected.d.ts_",
+    generated = ":types/a.d.ts",
+)
+
+write_source_files(
+    name = "test_dtsmap",
+    src = "expected.d.ts.map_",
+    generated = ":types/a.d.ts.map",
+)

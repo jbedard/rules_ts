@@ -1,0 +1,8 @@
+load("//ts:defs.bzl", "ts_project")
+
+ts_project(
+    name = "main",
+    srcs = ["main.ts"],
+    extends = "///extends_chain:tsconfig_node",
+    tsconfig = ":tsconfig.json",
+)

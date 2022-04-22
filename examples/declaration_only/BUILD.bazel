@@ -1,0 +1,13 @@
+load("@aspect_bazel_lib//lib:write_source_files.bzl", "write_source_files")
+load("//ts:defs.bzl", "ts_project")
+
+ts_project(
+    name = "ts",
+    declaration = True,
+    emit_declaration_only = True,
+)
+
+write_source_files(
+    name = "test",
+    files = {"a.d.ts_": ":ts"},
+)

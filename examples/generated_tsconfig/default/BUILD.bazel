@@ -1,0 +1,15 @@
+load("@aspect_bazel_lib//lib:write_source_files.bzl", "write_source_files")
+load("//ts:defs.bzl", "ts_project")
+
+ts_project(
+    tsconfig = {
+        "compilerOptions": {
+        },
+    },
+)
+
+write_source_files(
+    name = "test",
+    src = "expected.js_",
+    generated = ":a.js",
+)

@@ -1,0 +1,43 @@
+"Test that attributes set on ts_project are honored"
+
+load("@aspect_bazel_lib//lib:write_source_files.bzl", "write_source_files")
+load("//ts:defs.bzl", "ts_project")
+
+ts_project(
+    declaration = True,
+    declaration_dir = "types",
+    declaration_map = True,
+    out_dir = "out",
+    root_dir = "src",
+    source_map = True,
+    tsconfig = {
+        "compilerOptions": {
+            "module": "esnext",
+            "moduleResolution": "node",
+        },
+    },
+)
+
+write_source_files(
+    name = "test",
+    src = "expected.js_",
+    generated = ":out/a.js",
+)
+
+write_source_files(
+    name = "test_map",
+    src = "expected.js.map_",
+    generated = ":out/a.js.map",
+)
+
+write_source_files(
+    name = "test_dts",
+    src = "expected.d.ts_",
+    generated = ":types/a.d.ts",
+)
+
+write_source_files(
+    name = "test_dtsmap",
+    src = "expected.d.ts.map_",
+    generated = ":types/a.d.ts.map",
+)

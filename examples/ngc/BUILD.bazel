@@ -1,0 +1,22 @@
+load("@aspect_bazel_lib//lib:write_source_files.bzl", "write_source_files")
+load("//ts:defs.bzl", "ts_project")
+
+ts_project(
+    name = "ngc",
+    srcs = [
+        "comp.ng.html",
+        "component.ts",
+    ],
+    extends = "//:tsconfig-base.json",
+    tsc = "@npm//@angular/compiler-cli/bin:ngc",
+    tsconfig = ":tsconfig.json",
+    deps = [
+        "@npm//@angular/core",
+    ],
+)
+
+write_source_files(
+    name = "test",
+    src = "component.js_",
+    generated = ":component.js",
+)

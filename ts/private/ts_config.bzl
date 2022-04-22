@@ -72,8 +72,8 @@ def _relative_path(tsconfig, dest):
     # Bazel guarantees that srcs are beneath the package directory, and we disallow
     # tsconfig.json being generated with a "/" in the name.
     # So we can calculate a relative path from e.g.
-    # bazel-out/darwin-fastbuild/bin/packages/typescript/test/ts_project/generated_tsconfig/gen_src
-    # to <generated file packages/typescript/test/ts_project/generated_tsconfig/gen_src/subdir/a.ts>
+    # bazel-out/darwin-fastbuild/bin//generated_tsconfig/gen_src
+    # to <generated file /generated_tsconfig/gen_src/subdir/a.ts>
     result = dest.path[len(relative_to) + 1:]
     if not result.startswith("."):
         result = "./" + result

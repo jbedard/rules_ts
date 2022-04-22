@@ -1,0 +1,19 @@
+load("@aspect_bazel_lib//lib:write_source_files.bzl", "write_source_files")
+load("//ts:defs.bzl", "ts_project")
+
+ts_project(
+    name = "compile",
+    tsconfig = {
+        "compilerOptions": {
+            "declaration": True,
+            "emitDeclarationOnly": True,
+        },
+    },
+)
+
+write_source_files(
+    name = "test",
+    src = "a.d.ts",
+    # test the default output of the ts_project
+    generated = "compile",
+)
