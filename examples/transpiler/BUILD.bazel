@@ -1,6 +1,9 @@
 # Note, Bazel 6 starlark has lambda so maybe we can stop using partial
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
+load("@aspect_rules_js//npm:defs.bzl", "npm_package")
+load("@aspect_rules_js//js:defs.bzl", "js_library")
+
 load(":babel.bzl", "babel")
 
 ###
@@ -17,6 +20,15 @@ write_file(
         for x in range(10000)
     ],
 )
+write_file(
+    name = "gen_js",
+    out = "data.js",
+    content = ["{}"],
+)
+js_library(
+    name = "data_js",
+    srcs = ["data.js"],
+)
 
 # Runs babel to transpile ts -> js
 # and tsc to type-check
@@ -26,5 +38,38 @@ ts_project(
     declaration = True,
     out_dir = "build-babel",
     source_map = True,
+    deps = [
+        ":data_js",
+        "//examples:node_modules/@types/node",
+        "//examples:node_modules/date-fns",
+    ],
     transpiler = babel,
 )
+
+# exact same but not babel
+ts_project(
+    name = "tsc",
+    srcs = ["big.ts"],
+    declaration = True,
+    out_dir = "build-tsc",
+    source_map = True,
+    deps = [
+        ":data_js",
+        "//examples:node_modules/@types/node",
+        "//examples:node_modules/date-fns",
+    ],
+)
+
+npm_package(
+    name = "pkg-babel",
+    srcs = [
+        ":babel",
+    ],
+)
+npm_package(
+    name = "pkg-tsc",
+    srcs = [
+        ":tsc",
+    ],
+)
+
