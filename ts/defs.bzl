@@ -54,15 +54,15 @@ def ts_project(
         data = [],
         deps = [],
         extends = None,
-        allow_js = False,
-        declaration = False,
-        source_map = False,
-        declaration_map = False,
+        allow_js = None,
+        declaration = None,
+        source_map = None,
+        declaration_map = None,
         resolve_json_module = None,
         preserve_jsx = False,
         composite = False,
         incremental = False,
-        emit_declaration_only = False,
+        emit_declaration_only = None,
         transpiler = None,
         ts_build_info_file = None,
         tsc = _tsc,
@@ -291,24 +291,47 @@ def ts_project(
 
     if type(tsconfig) == type(dict()):
         # Copy attributes <-> tsconfig properties
-        # TODO: fail if compilerOptions includes a conflict with an attribute?
         compiler_options = tsconfig.setdefault("compilerOptions", {})
-        source_map = compiler_options.setdefault("sourceMap", source_map)
-        declaration = compiler_options.setdefault("declaration", declaration)
-        declaration_map = compiler_options.setdefault("declarationMap", declaration_map)
-        emit_declaration_only = compiler_options.setdefault("emitDeclarationOnly", emit_declaration_only)
-        allow_js = compiler_options.setdefault("allowJs", allow_js)
-        if resolve_json_module != None:
-            resolve_json_module = compiler_options.setdefault("resolveJsonModule", resolve_json_module)
+        new_source_map = compiler_options.setdefault("sourceMap", source_map)
+        new_declaration = compiler_options.setdefault("declaration", declaration)
+        new_declaration_map = compiler_options.setdefault("declarationMap", declaration_map)
+        new_emit_declaration_only = compiler_options.setdefault("emitDeclarationOnly", emit_declaration_only)
+        new_allow_js = compiler_options.setdefault("allowJs", allow_js)
+        new_resolve_json_module = compiler_options.setdefault("resolveJsonModule", resolve_json_module)
+        new_out_dir = compiler_options.pop("outDir", out_dir)
+        new_declaration_dir = compiler_options.pop("declarationDir", declaration_dir)
+        new_root_dir = compiler_options.pop("rootDir", root_dir)
 
-        # These options are always passed on the tsc command line so don't include them
-        # in the tsconfig. At best they're redundant, but at worst we'll have a conflict
-        if "outDir" in compiler_options.keys():
-            out_dir = compiler_options.pop("outDir")
-        if "declarationDir" in compiler_options.keys():
-            declaration_dir = compiler_options.pop("declarationDir")
-        if "rootDir" in compiler_options.keys():
-            root_dir = compiler_options.pop("rootDir")
+        # Verify no conflicts between ts_project() and ts_project(tsconfig)
+        if source_map != None and source_map != new_source_map:
+            fail("Conflict between tsconfig.compilerOptions.sourceMap (%s) and source_map (%s)" % (new_source_map, source_map))
+        if declaration != None and declaration != new_declaration:
+            fail("Conflict between tsconfig.compilerOptions.declaration (%s) and declaration (%s)" % (new_declaration, declaration))
+        if declaration_map != None and declaration_map != new_declaration_map:
+            fail("Conflict between tsconfig.compilerOptions.declarationMap (%s) and declaration_map (%s)" % (new_declaration_map, declaration_map))
+        if emit_declaration_only != None and emit_declaration_only != new_emit_declaration_only:
+            fail("Conflict between tsconfig.compilerOptions.emitDeclarationOnly (%s) and source_map (%s)" % (new_emit_declaration_only, emit_declaration_only))
+        if allow_js != None and allow_js != new_allow_js:
+            fail("Conflict between tsconfig.compilerOptions.allowJs (%s) and source_map (%s)" % (new_allow_js, allow_js))
+        if resolve_json_module != None and resolve_json_module != new_resolve_json_module:
+            fail("Conflict between tsconfig.compilerOptions.resolveJsonModule (%s) and resolve_json_module (%s)" % (new_resolve_json_module, resolve_json_module))
+        if out_dir != None and out_dir != new_out_dir:
+            fail("Conflict between tsconfig.compilerOptions.outDir (%s) and out_dir (%s)" % (new_out_dir, out_dir))
+        if declaration_dir != None and declaration_dir != new_declaration_dir:
+            fail("Conflict between tsconfig.compilerOptions.declarationDir (%s) and declaration_dir (%s)" % (new_declaration_dir, declaration_dir))
+        if root_dir != None and root_dir != new_root_dir:
+            fail("Conflict between tsconfig.compilerOptions.rootDir (%s) and root_dir (%s)" % (new_root_dir, root_dir))
+
+        # Override the ts_project() attributes with ts_project(tsconfig) options
+        source_map = new_source_map if new_source_map else False
+        declaration = new_declaration if new_declaration else False
+        declaration_map = new_declaration_map if new_declaration_map else False
+        emit_declaration_only = new_emit_declaration_only if new_emit_declaration_only else False
+        allow_js = new_allow_js if new_allow_js else False
+        resolve_json_module = new_resolve_json_module if new_resolve_json_module else False
+        out_dir = new_out_dir
+        declaration_dir = new_declaration_dir
+        root_dir = new_root_dir
 
         # FIXME: need to remove keys that have a None value?
         write_tsconfig(
@@ -325,7 +348,7 @@ def ts_project(
         # user supplied a tsconfig.json InputArtifact
         tsconfig = "tsconfig_%s.json" % name
 
-    elif validate:
+    if validate:
         validate_options(
             name = "_validate_%s_options" % name,
             target = "//%s:%s" % (native.package_name(), name),
