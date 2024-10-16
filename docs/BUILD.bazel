@@ -1,6 +1,6 @@
 # This load statement must be in the docs/ package rather than anything users depend on
 # so that the dependency on stardoc doesn't leak to them.
-load("@aspect_bazel_lib//lib:docs.bzl", "stardoc_with_diff_test", "update_docs")
+load(":docs.bzl", "stardoc_with_diff_test", "update_docs")
 
 stardoc_with_diff_test(
     name = "rules",
@@ -48,7 +48,12 @@ sh_binary(
     name = "docs_delivery_only_on_change",
     srcs = ["delivery.sh"],
     data = glob(["*.md"]),
-    tags = ["deliverable"],
+    tags = [
+        "deliverable",
+        "skip-on-bazel6",
+        "skip-on-bzlmod-0",
+        "skip-on-rbe",
+    ],
 )
 
 # Demonstration delivery target for Aspect Workflows.
@@ -57,4 +62,9 @@ sh_binary(
     name = "docs_delivery",
     srcs = ["delivery.sh"],
     data = glob(["*.md"]),
+    tags = [
+        "skip-on-bazel6",
+        "skip-on-bzlmod-0",
+        "skip-on-rbe",
+    ],
 )
