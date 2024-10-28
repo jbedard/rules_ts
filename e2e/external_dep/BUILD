@@ -38,3 +38,24 @@ build_test(
         "lib.ts56rc",
     ],
 )
+
+ts_project(
+    name = "external-deps",
+    srcs = ["lib.ts"],
+    composite = True,
+    out_dir = "external-deps",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@sub_external//:lib1",
+        "@sub_external//:tsconfig-dict",
+    ],
+)
+
+build_test(
+    name = "test-external",
+    targets = [
+        ":external-deps",
+        "@sub_external//:lib1",
+        "@sub_external//:tsconfig-dict",
+    ],
+)
