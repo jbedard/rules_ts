@@ -10,6 +10,7 @@ ts_project(
             "isolatedDeclarations": True,
         },
     },
+    visibility = ["//examples/isolated_typecheck:__subpackages__"],
     deps = ["//examples/isolated_typecheck/core"],
 )
 

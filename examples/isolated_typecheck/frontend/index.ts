@@ -10,4 +10,6 @@ const myObject: IntersectionType = {
 
 const otherObject = MyIntersectingValue
 
-console.log(myObject, otherObject, myObject === otherObject)
+setInterval(() => {
+    console.log(myObject, otherObject, myObject === otherObject)
+}, 10000)

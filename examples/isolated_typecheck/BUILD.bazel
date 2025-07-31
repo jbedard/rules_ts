@@ -1,7 +1,22 @@
+load("@aspect_rules_js//js:defs.bzl", "js_binary", "js_run_devserver")
 load("@aspect_rules_ts//ts:defs.bzl", "ts_config")
 
 ts_config(
     name = "tsconfig",
     src = "tsconfig.json",
     visibility = [":__subpackages__"],
+)
+
+js_binary(
+    name = "binary",
+    data = ["//examples/isolated_typecheck/frontend"],
+    entry_point = "//examples/isolated_typecheck/frontend:index.js",
+    visibility = ["//visibility:public"],
+)
+
+js_run_devserver(
+    name = "server",
+    data = ["//examples/isolated_typecheck/frontend"],
+    tool = ":binary",
+    visibility = ["//visibility:public"],
 )

@@ -18,3 +18,5 @@ export const MyIntersectingValue: IntersectionType = {
     b: '2',
     c: true,
 }
+
+console.log(1 + true)
