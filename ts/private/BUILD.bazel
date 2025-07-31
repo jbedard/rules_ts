@@ -84,6 +84,12 @@ bzl_library(
     ],
 )
 
+bzl_library(
+    name = "ts_typecheck_aspect",
+    srcs = ["ts_typecheck_aspect.bzl"],
+    visibility = ["//ts:__subpackages__"],
+)
+
 # keep
 bzl_library(
     name = "build_test",

@@ -10,10 +10,12 @@ load("//ts/private:build_test.bzl", "build_test")
 load("//ts/private:ts_config.bzl", "write_tsconfig", _TsConfigInfo = "TsConfigInfo", _ts_config = "ts_config")
 load("//ts/private:ts_lib.bzl", _lib = "lib")
 load("//ts/private:ts_project.bzl", _ts_project = "ts_project")
+load("//ts/private:ts_typecheck_aspect.bzl", _ts_typecheck_aspect = "ts_typecheck_aspect")
 
 ts_config = _ts_config
 TsConfigInfo = _TsConfigInfo
 ts_project_rule = _ts_project
+ts_typecheck_aspect = _ts_typecheck_aspect
 
 def _is_file_missing(label):
     """Check if a file is missing by passing its relative path through a glob().
