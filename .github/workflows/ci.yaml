@@ -24,6 +24,12 @@ jobs:
                 folder:
                     - .
                     - examples
+                    - 'e2e/smoke'
+                    - 'e2e/bzlmodules'
+                    - 'e2e/rules_js_v3'
+                    - 'e2e/external_dep'
+                    - 'e2e/external_dep/app'
+                    - 'e2e/worker'
                 # NB: linux testing is on Aspect Workflows
                 os:
                     - macos-latest
@@ -41,21 +47,12 @@ jobs:
 
     bats-tests:
         runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                bazel-version:
-                    - 7.x
-                    - 8.x
-                    - 9.x
-        env:
-            USE_BAZEL_VERSION: ${{matrix.bazel-version}}
 
         steps:
             - uses: actions/checkout@v5
             - uses: actions/setup-node@v3
               with:
-                  # pnpm 7 does not work with latest node 20
-                  node-version: 19
+                  node-version: 22
 
             - uses: pnpm/action-setup@v2
               with:
