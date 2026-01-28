@@ -26,9 +26,10 @@ workspaces:
             - buildifier:
                   without: true
     e2e/smoke:
-        tasks: &e2e_tasks
+        tasks:
             - bazel-6:
-                  queue: aspect-medium
+                  # TODO: smoke broken with bazel6 due to rules_proto
+                  without: true
             - bazel-7:
                   queue: aspect-medium
             - bazel-7-wksp:
@@ -56,11 +57,12 @@ workspaces:
             - buildifier:
                   without: true
     e2e/bzlmodules:
-        tasks:
+        tasks: &e2e_bzlmod_tasks
             - bazel-6:
                   queue: aspect-medium
             - bazel-7:
                   queue: aspect-medium
+            # bzlmod-only test
             - bazel-7-wksp:
                   without: true
             - bazel-8:
@@ -70,10 +72,22 @@ workspaces:
             - buildifier:
                   without: true
     e2e/external_dep:
-        tasks: *e2e_tasks
+        tasks: &e2e_tasks
+            - bazel-6:
+                  queue: aspect-medium
+            - bazel-7:
+                  queue: aspect-medium
+            - bazel-7-wksp:
+                  queue: aspect-medium
+            - bazel-8:
+                  queue: aspect-medium
+            - format:
+                  without: true
+            - buildifier:
+                  without: true
+    e2e/nested_repos:
+        tasks: *e2e_bzlmod_tasks
     e2e/worker:
-        tasks: *e2e_tasks
-    e2e/test:
         tasks: *e2e_tasks
 tasks:
     - test:
