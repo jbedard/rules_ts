@@ -71,6 +71,8 @@ workspaces:
                   without: true
             - buildifier:
                   without: true
+    e2e/nested_repos:
+        tasks: *e2e_bzlmod_tasks
     e2e/external_dep:
         tasks: &e2e_tasks
             - bazel-6:
@@ -85,8 +87,8 @@ workspaces:
                   without: true
             - buildifier:
                   without: true
-    e2e/nested_repos:
-        tasks: *e2e_bzlmod_tasks
+    e2e/external_dep/app:
+        tasks: *e2e_tasks
     e2e/worker:
         tasks: *e2e_tasks
 tasks:
@@ -96,6 +98,7 @@ tasks:
           bazel:
               flags:
                   - --incompatible_merge_fixed_and_default_shell_env
+                  - --enable_bzlmod=true
           env:
               # NOTE: initial 6.6 build produces error
               USE_BAZEL_VERSION: 6.5.0
