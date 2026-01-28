@@ -25,13 +25,9 @@ jobs:
                     - .
                     - examples
                     - 'e2e/smoke'
-                    - 'e2e/bzlmodules'
                     - 'e2e/rules_js_v3'
-                    - 'e2e/external_dep'
-                    - 'e2e/external_dep/app'
-                    - 'e2e/worker'
-                # NB: linux testing is on Aspect Workflows
                 os:
+                    # NB: linux testing is on Aspect Workflows
                     - macos-latest
                     # Broken by rules_multitool, among others
                     # - windows-latest
