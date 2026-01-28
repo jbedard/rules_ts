@@ -72,7 +72,21 @@ workspaces:
             - buildifier:
                   without: true
     e2e/nested_repos:
-        tasks: *e2e_bzlmod_tasks
+        tasks:
+            # Bazel6 bzlmod extensions differ/broken-in-test
+            - bazel-6:
+                  without: true
+            - bazel-7:
+                  queue: aspect-medium
+            # bzlmod-only test
+            - bazel-7-wksp:
+                  without: true
+            - bazel-8:
+                  queue: aspect-medium
+            - format:
+                  without: true
+            - buildifier:
+                  without: true
     e2e/external_dep:
         tasks: &e2e_tasks
             - bazel-6:
