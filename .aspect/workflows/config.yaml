@@ -3,9 +3,49 @@ workspaces:
     .:
         icon: typescript
         label: rules_ts
-    e2e/smoke:
         tasks:
+            # No Bazel6 in root/examples
             - bazel-6:
+                  without: true
+            # No WORKSPACE root/examples
+            - bazel-7-wksp:
+                  without: true
+    examples:
+        tasks:
+            # No Bazel6 in root/examples
+            - bazel-6:
+                  without: true
+            # No Bazel7 in root/examples
+            - bazel-7:
+                  without: true
+            # No WORKSPACE root/examples
+            - bazel-7-wksp:
+                  without: true
+            - format:
+                  without: true
+            - buildifier:
+                  without: true
+    e2e/smoke:
+        tasks: &e2e_tasks
+            - bazel-6:
+                  queue: aspect-medium
+            - bazel-7:
+                  queue: aspect-medium
+            - bazel-7-wksp:
+                  queue: aspect-medium
+            - bazel-8:
+                  queue: aspect-medium
+            - format:
+                  without: true
+            - buildifier:
+                  without: true
+    e2e/rules_js_v3:
+        tasks:
+            # No Bazel6 in rules_js v3
+            - bazel-6:
+                  without: true
+            # No WORKSPACE in rules_js v3
+            - bazel-7-wksp:
                   without: true
             - bazel-7:
                   queue: aspect-medium
@@ -18,21 +58,11 @@ workspaces:
     e2e/bzlmodules:
         tasks:
             - bazel-6:
-                  without: true
+                  queue: aspect-medium
             - bazel-7:
                   queue: aspect-medium
-            - bazel-8:
-                  queue: aspect-medium
-            - format:
+            - bazel-7-wksp:
                   without: true
-            - buildifier:
-                  without: true
-    e2e/rules_js_v3:
-        tasks:
-            - bazel-6:
-                  without: true
-            - bazel-7:
-                  queue: aspect-medium
             - bazel-8:
                   queue: aspect-medium
             - format:
@@ -40,54 +70,11 @@ workspaces:
             - buildifier:
                   without: true
     e2e/external_dep:
-        tasks:
-            - bazel-6:
-                  queue: aspect-medium
-            - bazel-7:
-                  queue: aspect-medium
-            - bazel-8:
-                  queue: aspect-medium
-            - format:
-                  without: true
-            - buildifier:
-                  without: true
+        tasks: *e2e_tasks
     e2e/worker:
-        tasks:
-            - bazel-6:
-                  queue: aspect-medium
-            - bazel-7:
-                  queue: aspect-medium
-            - bazel-8:
-                  queue: aspect-medium
-            - format:
-                  without: true
-            - buildifier:
-                  without: true
+        tasks: *e2e_tasks
     e2e/test:
-        tasks:
-            - bazel-6:
-                  queue: aspect-medium
-            - bazel-7:
-                  queue: aspect-medium
-            - bazel-8:
-                  queue: aspect-medium
-            - format:
-                  without: true
-            - buildifier:
-                  without: true
-    examples:
-        tasks:
-            - bazel-6:
-                  without: true
-            - bazel-7:
-                  # Uses REPO.bazel to exclude node_modules
-                  without: true
-            - bazel-8:
-                  queue: aspect-medium
-            - format:
-                  without: true
-            - buildifier:
-                  without: true
+        tasks: *e2e_tasks
 tasks:
     - test:
           name: Bazel 6
@@ -101,6 +88,14 @@ tasks:
     - test:
           name: Bazel 7
           id: bazel-7
+          env:
+              USE_BAZEL_VERSION: 7.x
+    - test:
+          name: Bazel 7 (WORKSPACE)
+          id: bazel-7-wksp
+          bazel:
+              flags:
+                  - --enable_bzlmod=false
           env:
               USE_BAZEL_VERSION: 7.x
     - test:
