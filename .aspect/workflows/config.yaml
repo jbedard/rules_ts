@@ -118,6 +118,9 @@ tasks:
     - test:
           name: Bazel 8
           id: bazel-8
+          bazel:
+              flags:
+                  - --enable_workspace=true
           env:
               USE_BAZEL_VERSION: 8.x
     - format:
