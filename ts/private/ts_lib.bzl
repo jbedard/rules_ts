@@ -199,6 +199,16 @@ OUTPUT_ATTRS = {
     "buildinfo_out": attr.output(
         doc = "Location in bazel-out where tsc will write a `.tsbuildinfo` file",
     ),
+    "predeclared_outs_complete": attr.bool(
+        doc = """Whether js_outs, map_outs, typings_outs and typing_maps_outs are known to contain
+every output tsc will emit for srcs, allowing the rule to skip recalculating outputs from the
+resolved srcs files.
+
+Only set this when every entry in srcs is a plain source file path; a srcs entry referencing a
+rule (such as a filegroup or genrule) can provide additional source files that outputs must be
+calculated from.""",
+        default = False,
+    ),
     "js_outs": attr.output_list(
         doc = "Locations in bazel-out where tsc will write `.js` files",
     ),

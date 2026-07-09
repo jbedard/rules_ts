@@ -102,37 +102,44 @@ def _ts_project_impl(ctx):
         tsconfig_transitive_deps,
     ])
 
-    # Recalculate outputs inside the rule implementation.
-    # The outs are first calculated in the macro in order to try to predetermine outputs so they can be declared as
-    # outputs on the rule. This provides the benefit of being able to reference an output file with a label.
-    # However, it is not possible to evaluate files in outputs of other rules such as filegroup, therefore the outs are
-    # recalculated here.
     typings_out_dir = ctx.attr.declaration_dir or ctx.attr.out_dir
 
-    outs = _lib.calculate_outs(
-        srcs = srcs,
-        out_dir = ctx.attr.out_dir,
-        typings_out_dir = typings_out_dir,
-        root_dir = ctx.attr.root_dir,
-        allow_js = ctx.attr.allow_js,
-        resolve_json_module = ctx.attr.resolve_json_module,
-        preserve_jsx = ctx.attr.preserve_jsx,
-        emit_declaration_only = ctx.attr.emit_declaration_only,
-        source_map = ctx.attr.source_map,
-        declaration = ctx.attr.declaration,
-        composite = ctx.attr.composite,
-        declaration_map = ctx.attr.declaration_map,
-        emit_js = not ctx.attr.no_emit and ctx.attr.transpile != 0,
-        emit_dts = not ctx.attr.no_emit and not ctx.attr.declaration_transpile,
-    )
+    if ctx.attr.predeclared_outs_complete:
+        # The macro predetermined every output; skip recalculating them from the resolved srcs.
+        js_outs = ctx.outputs.js_outs
+        map_outs = ctx.outputs.map_outs
+        typings_outs = ctx.outputs.typings_outs
+        typing_maps_outs = ctx.outputs.typing_maps_outs
+    else:
+        # Recalculate outputs inside the rule implementation.
+        # The outs are first calculated in the macro in order to try to predetermine outputs so they can be declared as
+        # outputs on the rule. This provides the benefit of being able to reference an output file with a label.
+        # However, it is not possible to evaluate files in outputs of other rules such as filegroup, therefore the outs are
+        # recalculated here.
+        outs = _lib.calculate_outs(
+            srcs = srcs,
+            out_dir = ctx.attr.out_dir,
+            typings_out_dir = typings_out_dir,
+            root_dir = ctx.attr.root_dir,
+            allow_js = ctx.attr.allow_js,
+            resolve_json_module = ctx.attr.resolve_json_module,
+            preserve_jsx = ctx.attr.preserve_jsx,
+            emit_declaration_only = ctx.attr.emit_declaration_only,
+            source_map = ctx.attr.source_map,
+            declaration = ctx.attr.declaration,
+            composite = ctx.attr.composite,
+            declaration_map = ctx.attr.declaration_map,
+            emit_js = not ctx.attr.no_emit and ctx.attr.transpile != 0,
+            emit_dts = not ctx.attr.no_emit and not ctx.attr.declaration_transpile,
+        )
 
-    # js+map file outputs
-    js_outs = _lib.declare_outputs(ctx, outs.js_outs)
-    map_outs = _lib.declare_outputs(ctx, outs.map_outs)
+        # js+map file outputs
+        js_outs = _lib.declare_outputs(ctx, outs.js_outs)
+        map_outs = _lib.declare_outputs(ctx, outs.map_outs)
 
-    # dts+map file outputs
-    typings_outs = _lib.declare_outputs(ctx, outs.typings_outs)
-    typing_maps_outs = _lib.declare_outputs(ctx, outs.typing_maps_outs)
+        # dts+map file outputs
+        typings_outs = _lib.declare_outputs(ctx, outs.typings_outs)
+        typing_maps_outs = _lib.declare_outputs(ctx, outs.typing_maps_outs)
 
     validation_outs = []
     if ctx.attr.validate:

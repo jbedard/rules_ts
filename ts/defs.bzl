@@ -27,6 +27,31 @@ def _is_file_missing(label):
     file_glob = native.glob([file_rel], allow_empty = True)
     return len(file_glob) == 0
 
+def _srcs_are_statically_known(srcs):
+    """Whether srcs is a list of plain TypeScript source file paths.
+
+    When true, the output paths predicted from the path strings are guaranteed to equal
+    the output paths derived from the resolved files inside the rule implementation, so
+    the implementation can skip recalculating them.
+
+    A plain path could still name a rule (rather than a source file) whose name looks
+    like a TypeScript source; if such a rule provides different files, the outputs
+    predeclared by the macro would already fail the build today (a predeclared output
+    with no generating action), so treating those paths as source files is safe.
+    """
+    if type(srcs) != "list":
+        return False
+    for s in srcs:
+        if type(s) != "string" or s.startswith((":", "//", "@")):
+            # Explicit label syntax may reference a target that provides other files
+            return False
+        if not _lib.is_ts_src(s, False, False, False):
+            # Not a plain .ts/.tsx/.mts/.cts path. It may be an asset, typings or js
+            # src (harmless), but it may also reference a rule that provides additional
+            # source files which only the rule implementation can see; be conservative.
+            return False
+    return True
+
 _tsc = "@npm_typescript//:tsc"
 _tsc_worker = "@npm_typescript//:tsc_worker"
 
@@ -489,9 +514,20 @@ def ts_project(
             "//conditions:default": False,
         })
 
+    # Whether the predeclared outputs computed above are exactly the outputs the rule
+    # implementation would recalculate from the resolved srcs files. When srcs references
+    # other rules (e.g. a filegroup) the implementation must recalculate outputs from the
+    # files those rules provide. composite-without-declaration typings are only derived
+    # within the rule implementation, so predeclared outputs are incomplete in that case.
+    predeclared_outs_complete = (
+        (declaration or emit_declaration_only or not composite) and
+        _srcs_are_statically_known(srcs)
+    )
+
     ts_project_rule(
         name = name,
         srcs = srcs,
+        predeclared_outs_complete = predeclared_outs_complete,
         args = args,
         assets = assets,
         data = data,
