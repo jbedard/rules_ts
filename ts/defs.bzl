@@ -41,6 +41,8 @@ def ts_project(
         extends = None,
         allow_js = False,
         isolated_typecheck = False,
+        typecheck_test_targets = True,
+        transitive_typecheck_targets = True,
         declaration = False,
         source_map = False,
         declaration_map = False,
@@ -157,6 +159,20 @@ def ts_project(
 
             Requires https://devblogs.microsoft.com/typescript/announcing-typescript-5-6/#the---nocheck-option6
             Requires https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-5.html#isolated-declarations
+
+        typecheck_test_targets: Whether to generate the `{name}_typecheck_test` (and `{name}_transitive_typecheck_test`)
+            `build_test` targets alongside the `{name}_typecheck` (and `{name}_transitive_typecheck`) targets.
+
+            These tests ensure type-checking runs under `bazel test --build_tests_only`.
+            Set to `False` to reduce the number of targets created per `ts_project`, which can add up to
+            noticeable loading and analysis time in large repositories, e.g. if CI builds the
+            `{name}_typecheck` targets directly instead.
+
+        transitive_typecheck_targets: Whether to generate the `{name}_transitive_typecheck` target which
+            type-checks this project as well as all transitive `ts_project` dependencies.
+
+            Set to `False` to reduce the number of targets created per `ts_project`, which can add up to
+            noticeable loading and analysis time in large repositories.
 
         transpiler: A custom transpiler tool to run that produces the JavaScript outputs instead of `tsc`.
 
@@ -417,9 +433,6 @@ def ts_project(
     # If the primary target does not output dts files then type-checking has a separate target.
     if not emit_tsc_js or not emit_tsc_dts or isolated_typecheck:
         typecheck_target_name = "%s_typecheck" % name
-        transitive_typecheck_target_name = "%s_transitive_typecheck" % name
-        test_target_name = "%s_typecheck_test" % name
-        transitive_typecheck_test_target_name = "%s_transitive_typecheck_test" % name
 
         # Users should build this target to get a failed build when typechecking fails
         native.filegroup(
@@ -429,32 +442,37 @@ def ts_project(
             **common_kwargs
         )
 
-        # Users should build this target to get a failed build when typechecking fails
-        native.filegroup(
-            name = transitive_typecheck_target_name,
-            srcs = [name],
-            output_group = "transitive_typecheck",
-            tags = ["manual"] + common_kwargs.get("tags", []),
-            visibility = common_kwargs.get("visibility"),
-            testonly = common_kwargs.get("testonly"),
-        )
+        if typecheck_test_targets:
+            # Ensures the typecheck target gets built under `bazel test --build_tests_only`
+            build_test(
+                name = "%s_typecheck_test" % name,
+                targets = [typecheck_target_name],
+                tags = common_kwargs.get("tags"),
+                size = "small",
+                visibility = common_kwargs.get("visibility"),
+            )
 
-        # Ensures the typecheck target gets built under `bazel test --build_tests_only`
-        build_test(
-            name = test_target_name,
-            targets = [typecheck_target_name],
-            tags = common_kwargs.get("tags"),
-            size = "small",
-            visibility = common_kwargs.get("visibility"),
-        )
+        if transitive_typecheck_targets:
+            transitive_typecheck_target_name = "%s_transitive_typecheck" % name
 
-        build_test(
-            name = transitive_typecheck_test_target_name,
-            targets = [transitive_typecheck_target_name],
-            tags = ["manual"] + common_kwargs.get("tags", []),
-            size = "small",
-            visibility = common_kwargs.get("visibility"),
-        )
+            # Users should build this target to get a failed build when typechecking fails
+            native.filegroup(
+                name = transitive_typecheck_target_name,
+                srcs = [name],
+                output_group = "transitive_typecheck",
+                tags = ["manual"] + common_kwargs.get("tags", []),
+                visibility = common_kwargs.get("visibility"),
+                testonly = common_kwargs.get("testonly"),
+            )
+
+            if typecheck_test_targets:
+                build_test(
+                    name = "%s_transitive_typecheck_test" % name,
+                    targets = [transitive_typecheck_target_name],
+                    tags = ["manual"] + common_kwargs.get("tags", []),
+                    size = "small",
+                    visibility = common_kwargs.get("visibility"),
+                )
 
     # Disable workers if a custom tsc was provided but not a custom tsc_worker.
     if tsc != _tsc and tsc_worker == _tsc_worker:

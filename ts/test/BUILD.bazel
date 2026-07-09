@@ -5,10 +5,13 @@ load(":transpiler_tests.bzl", "transpiler_test_suite")
 load(":ts_config_test.bzl", "ts_config_test_suite")
 load(":ts_lib_test.bzl", "ts_lib_test_suite")
 load(":ts_project_test.bzl", "ts_project_test_suite")
+load(":typecheck_targets_checks.bzl", "typecheck_targets_checks")
 
 transpiler_test_suite()
 
 ts_lib_test_suite(name = "ts_lib_test")
+
+typecheck_targets_checks(name = "typecheck_targets_checks")
 
 ts_project_test_suite(name = "ts_project_test")
 
