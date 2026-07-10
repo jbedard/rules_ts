@@ -66,3 +66,29 @@ With `isolated_typecheck` on module C more can be parallelized:
 ```
 
 The additional parallelization will also lead to type-checking starting sooner.
+
+## Reducing the number of generated targets
+
+When type-checking is a separate action (a custom `transpiler`, `no_emit` or `isolated_typecheck`),
+each `ts_project(name = "foo")` generates several helper targets alongside the primary target:
+
+* `foo_typecheck` - a filegroup users build to type-check `foo`
+* `foo_typecheck_test` - a `build_test` ensuring `foo_typecheck` is built under `bazel test --build_tests_only`
+* `foo_transitive_typecheck` - a filegroup type-checking `foo` and all transitive `ts_project` dependencies
+* `foo_transitive_typecheck_test` - a `build_test` for `foo_transitive_typecheck`
+
+In repositories with thousands of `ts_project` targets the extra targets add measurable
+loading and analysis time. If CI builds the `{name}_typecheck` targets directly, or the
+transitive typecheck targets are unused, the extras can be disabled per target (most
+commonly from a wrapper macro):
+
+```starlark
+ts_project(
+    name = "foo",
+    ...
+    # CI requests the foo_typecheck target directly instead of relying on build_tests
+    typecheck_test_targets = False,
+    # Transitive type-checking is not used in this repository
+    transitive_typecheck_targets = False,
+)
+```
