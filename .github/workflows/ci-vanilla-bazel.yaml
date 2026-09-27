@@ -87,12 +87,24 @@ jobs:
                   detik-install: false
                   file-install: false
 
+            - uses: aspect-build/setup-aspect@b1e9d142e86f63c10d603304daa22bf80492e24c # v2026.25.1
+              with:
+                  aspect-api-token: ${{ secrets.ASPECT_OSS_API_TOKEN }}
+                  disk-cache: false
+                  repository-cache: false
+
             - name: bats -r .
               working-directory: e2e/test
               env:
                   BATS_LIB_PATH: ${{ steps.setup-bats.outputs.lib-path }}
               run: |
-                  echo "import $GITHUB_WORKSPACE/.github/workflows/ci.bazelrc" > .bazelrc
+                  cat > .bazelrc <<EOF
+                  import $GITHUB_WORKSPACE/.github/workflows/ci.bazelrc
+                  import $GITHUB_WORKSPACE/.aspect/bazelrc
+                  common $BAZEL_ASPECT_FLAGS
+                  # Each test workspace is a fresh temp dir without the aspect-exec-log output directory
+                  common --execution_log_compact_file=$RUNNER_TEMP/exec.log.zstd
+                  EOF
                   bats -r .
 
     # For branch protection settings, this job provides a "stable" name that can be used to gate PR merges
